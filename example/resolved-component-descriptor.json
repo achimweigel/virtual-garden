@@ -52,7 +52,7 @@
           },
           {
             "name": "kube-apiserver",
-            "version": "v1.18.14",
+            "version": "v1.19.14",
             "type": "ociImage",
             "relation": "external",
             "access": {
@@ -62,7 +62,7 @@
           },
           {
             "name": "kube-controller-manager",
-            "version": "v1.18.14",
+            "version": "v1.19.14",
             "type": "ociImage",
             "relation": "external",
             "access": {

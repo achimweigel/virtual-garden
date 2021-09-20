@@ -28,7 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-func (o *operation) deployKubeAPIServerDeploymentControllerManager(ctx context.Context, checksums map[string]string, basicAuthPw string) error {
+func (o *operation) deployKubeAPIServerDeploymentControllerManager(ctx context.Context, checksums map[string]string) error {
 	o.log.Infof("Deploying deployment %s", KubeAPIServerDeploymentNameControllerManager)
 
 	deployment := o.emptyDeployment(KubeAPIServerDeploymentNameControllerManager)

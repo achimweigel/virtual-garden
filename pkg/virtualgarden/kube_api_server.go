@@ -39,7 +39,7 @@ func (o *operation) DeployKubeAPIServer(ctx context.Context) error {
 		return err
 	}
 
-	basicAuthPw, err := o.deployKubeAPIServerSecrets(ctx, checksums)
+	staticTokenHealthCheck, err := o.deployKubeAPIServerSecrets(ctx, checksums)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func (o *operation) DeployKubeAPIServer(ctx context.Context) error {
 		return err
 	}
 
-	err = o.deployDeployments(ctx, checksums, basicAuthPw)
+	err = o.deployDeployments(ctx, checksums, staticTokenHealthCheck)
 	if err != nil {
 		return err
 	}

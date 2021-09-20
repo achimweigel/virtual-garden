@@ -35,10 +35,10 @@ const (
 	KubeAPIServerDeploymentNameControllerManager = Prefix + "-kube-controller-manager"
 )
 
-func (o *operation) deployDeployments(ctx context.Context, checksums map[string]string, basicAuthPw string) error {
+func (o *operation) deployDeployments(ctx context.Context, checksums map[string]string, staticTokenHealthCheck string) error {
 	o.log.Infof("Deploying deployments for the kube-apiserver")
 
-	if err := o.deployKubeAPIServerDeployment(ctx, checksums, basicAuthPw); err != nil {
+	if err := o.deployKubeAPIServerDeployment(ctx, checksums, staticTokenHealthCheck); err != nil {
 		return err
 	}
 
@@ -46,7 +46,7 @@ func (o *operation) deployDeployments(ctx context.Context, checksums map[string]
 		return err
 	}
 
-	if err := o.deployKubeAPIServerDeploymentControllerManager(ctx, checksums, basicAuthPw); err != nil {
+	if err := o.deployKubeAPIServerDeploymentControllerManager(ctx, checksums); err != nil {
 		return err
 	}
 
@@ -72,7 +72,7 @@ func (o *operation) deleteDeployments(ctx context.Context) error {
 	return nil
 }
 
-func (o *operation) deployKubeAPIServerDeployment(ctx context.Context, checksums map[string]string, basicAuthPw string) error {
+func (o *operation) deployKubeAPIServerDeployment(ctx context.Context, checksums map[string]string, staticTokenHealthCheck string) error {
 	o.log.Infof("Deploying deployment %s", KubeAPIServerDeploymentNameAPIServer)
 
 	deployment := o.emptyDeployment(KubeAPIServerDeploymentNameAPIServer)
@@ -165,7 +165,7 @@ func (o *operation) deployKubeAPIServerDeployment(ctx context.Context, checksums
 										Path:        "/livez",
 										Port:        intstr.IntOrString{Type: intstr.Int, IntVal: 443},
 										Scheme:      corev1.URISchemeHTTPS,
-										HTTPHeaders: o.getAPIServerHeaders(basicAuthPw),
+										HTTPHeaders: o.getAPIServerHeaders(staticTokenHealthCheck),
 									},
 								},
 								InitialDelaySeconds: 15,
@@ -180,7 +180,7 @@ func (o *operation) deployKubeAPIServerDeployment(ctx context.Context, checksums
 										Path:        "/readyz",
 										Port:        intstr.IntOrString{Type: intstr.Int, IntVal: 443},
 										Scheme:      corev1.URISchemeHTTPS,
-										HTTPHeaders: o.getAPIServerHeaders(basicAuthPw),
+										HTTPHeaders: o.getAPIServerHeaders(staticTokenHealthCheck),
 									},
 								},
 								InitialDelaySeconds: 10,
@@ -234,7 +234,7 @@ func (o *operation) computeApiServerAnnotations(checksums map[string]string) map
 		ChecksumKeyKubeAPIServerServer,
 		ChecksumKeyKubeAPIServerAuditWebhookConfig,
 		ChecksumKeyKubeAPIServerAuthWebhookConfig,
-		ChecksumKeyKubeAPIServerBasicAuth,
+		ChecksumKeyKubeAPIServerStaticToken,
 		ChecksumKeyKubeAPIServerAdmissionConfig,
 	})
 	return annotations
@@ -283,7 +283,6 @@ func (o *operation) getAPIServerCommand() []string {
 		command = append(command, "--authorization-mode=RBAC")
 	}
 
-	command = append(command, "--basic-auth-file=/srv/kubernetes/auth/basic_auth.csv")
 	command = append(command, "--client-ca-file=/srv/kubernetes/ca/ca.crt")
 	command = append(command, "--enable-aggregator-routing=true")
 	command = append(command, "--enable-bootstrap-token-auth=true")
@@ -319,6 +318,7 @@ func (o *operation) getAPIServerCommand() []string {
 	command = append(command, "--service-cluster-ip-range=100.64.0.0/13")
 	command = append(command, "--service-account-key-file=/srv/kubernetes/service-account-key/service_account.key")
 	command = append(command, "--shutdown-delay-duration=20s")
+	command = append(command, "--token-auth-file=/srv/kubernetes/token/static_tokens.csv")
 	command = append(command, "--tls-cert-file=/srv/kubernetes/apiserver/tls.crt")
 	command = append(command, "--tls-private-key-file=/srv/kubernetes/apiserver/tls.key")
 	command = append(command, "--tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA")
@@ -369,11 +369,11 @@ func (o *operation) getSNIHostname() string {
 	return o.imports.VirtualGarden.KubeAPIServer.SNI.Hostname
 }
 
-func (o *operation) getAPIServerHeaders(basicAuthPw string) []corev1.HTTPHeader {
+func (o *operation) getAPIServerHeaders(staticTokenHealthCheck string) []corev1.HTTPHeader {
 	return []corev1.HTTPHeader{
 		{
 			Name:  "Authorization",
-			Value: "Basic " + utils.EncodeBase64([]byte("admin:"+basicAuthPw)),
+			Value: "Bearer " + utils.EncodeBase64([]byte(staticTokenHealthCheck)),
 		},
 	}
 }
@@ -433,8 +433,8 @@ func (o *operation) getAPIServerVolumeMounts() []corev1.VolumeMount {
 			MountPath: "/srv/kubernetes/service-account-key",
 		},
 		corev1.VolumeMount{
-			Name:      volumeNameKubeAPIServerBasicAuth,
-			MountPath: "/srv/kubernetes/auth",
+			Name:      volumeNameKubeAPIServerStaticToken,
+			MountPath: "/srv/kubernetes/token",
 		},
 		corev1.VolumeMount{
 			Name:      volumeNameKubeAggregator,
@@ -516,7 +516,7 @@ func (o *operation) getAPIServerVolumes() []corev1.Volume {
 		volumeWithSecretSource(volumeNameCAFrontProxy, KubeApiServerSecretNameAggregatorCACertificate),
 		volumeWithSecretSource(volumeNameKubeAPIServer, KubeApiServerSecretNameApiServerServerCertificate),
 		volumeWithSecretSource(volumeNameETCDClientTLS, "virtual-garden-etcd-client"),
-		volumeWithSecretSource(volumeNameKubeAPIServerBasicAuth, KubeApiServerSecretNameBasicAuth),
+		volumeWithSecretSource(volumeNameKubeAPIServerStaticToken, KubeApiServerSecretNameStaticToken),
 		volumeWithSecretSource(volumeNameServiceAccountKey, KubeApiServerSecretNameServiceAccountKey),
 		volumeWithSecretSource(volumeNameKubeAggregator, KubeApiServerSecretNameAggregatorClientCertificate),
 	)
