@@ -258,21 +258,15 @@ func (o *operation) getAPIServerCommand() []string {
 	if o.isWebhookEnabled() {
 		command = append(command, "--admission-control-config-file=/etc/gardener-apiserver/admission/configuration.yaml")
 	}
-	command = append(command, "--enable-admission-plugins=Priority,NamespaceLifecycle,LimitRanger,PodSecurityPolicy,ServiceAccount,NodeRestriction,DefaultStorageClass,DefaultTolerationSeconds,ResourceQuota,StorageObjectInUseProtection,MutatingAdmissionWebhook,ValidatingAdmissionWebhook")
-	command = append(command, "--disable-admission-plugins=PersistentVolumeLabel")
+	command = append(command, "--allow-privileged=true")
+	command = append(command, "--anonymous-auth=false")
 	command = append(command, "--audit-policy-file=/etc/kube-apiserver/audit/audit-policy.yaml")
-	if len(o.getAPIServerAuditWebhookConfig()) > 0 {
-		command = append(command, "--audit-webhook-config-file=/etc/kube-apiserver/auditwebhook/audit-webhook-config.yaml")
-	}
 	if o.getAuditWebhookBatchMaxSize() != "" {
 		command = append(command, fmt.Sprintf("--audit-webhook-batch-max-size=%s", o.getAuditWebhookBatchMaxSize()))
 	}
-	if o.hasEncryptionConfig() {
-		command = append(command, "--encryption-provider-config=/etc/kube-apiserver/encryption/encryption-config.yaml")
+	if len(o.getAPIServerAuditWebhookConfig()) > 0 {
+		command = append(command, "--audit-webhook-config-file=/etc/kube-apiserver/auditwebhook/audit-webhook-config.yaml")
 	}
-	command = append(command, "--allow-privileged=true")
-	command = append(command, "--anonymous-auth=false")
-
 	if o.isSeedAuthorizerEnabled() {
 		command = append(command, "--authorization-mode=RBAC,Webhook")
 		command = append(command, "--authorization-webhook-config-file=/etc/kube-apiserver/auth-webhook/config.yaml")
@@ -281,10 +275,14 @@ func (o *operation) getAPIServerCommand() []string {
 	} else {
 		command = append(command, "--authorization-mode=RBAC")
 	}
-
 	command = append(command, "--client-ca-file=/srv/kubernetes/ca/ca.crt")
+	command = append(command, "--disable-admission-plugins=PersistentVolumeLabel")
+	command = append(command, "--enable-admission-plugins=Priority,NamespaceLifecycle,LimitRanger,PodSecurityPolicy,ServiceAccount,NodeRestriction,DefaultStorageClass,DefaultTolerationSeconds,ResourceQuota,StorageObjectInUseProtection,MutatingAdmissionWebhook,ValidatingAdmissionWebhook")
 	command = append(command, "--enable-aggregator-routing=true")
 	command = append(command, "--enable-bootstrap-token-auth=true")
+	if o.hasEncryptionConfig() {
+		command = append(command, "--encryption-provider-config=/etc/kube-apiserver/encryption/encryption-config.yaml")
+	}
 	command = append(command, "--etcd-cafile=/srv/kubernetes/etcd/ca/ca.crt")
 	command = append(command, "--etcd-certfile=/srv/kubernetes/etcd/client/tls.crt")
 	command = append(command, "--etcd-keyfile=/srv/kubernetes/etcd/client/tls.key")
@@ -295,16 +293,16 @@ func (o *operation) getAPIServerCommand() []string {
 	if o.getAPIServerEventTTL() != "" {
 		command = append(command, fmt.Sprintf("--event-ttl=%s", o.getAPIServerEventTTL()))
 	}
+	command = append(command, "--insecure-port=0")
 	command = append(command, "--kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP")
 	command = append(command, "--livez-grace-period=1m")
-	command = append(command, "--insecure-port=0")
-	command = append(command, "--max-requests-inflight=800")
 	command = append(command, "--max-mutating-requests-inflight=400")
+	command = append(command, "--max-requests-inflight=800")
 	if o.getAPIServerOIDCIssuerURL() != nil {
-		command = append(command, fmt.Sprintf("--oidc-issuer-url=%s", *o.getAPIServerOIDCIssuerURL()))
 		command = append(command, "--oidc-client-id=kube-kubectl")
-		command = append(command, "--oidc-username-claim=email")
 		command = append(command, "--oidc-groups-claim=groups")
+		command = append(command, fmt.Sprintf("--oidc-issuer-url=%s", *o.getAPIServerOIDCIssuerURL()))
+		command = append(command, "--oidc-username-claim=email")
 	}
 	command = append(command, "--profiling=false")
 	command = append(command, "--proxy-client-cert-file=/srv/kubernetes/aggregator/tls.crt")
@@ -314,18 +312,18 @@ func (o *operation) getAPIServerCommand() []string {
 	command = append(command, "--requestheader-group-headers=X-Remote-Group")
 	command = append(command, "--requestheader-username-headers=X-Remote-User")
 	command = append(command, "--secure-port=443")
-	command = append(command, "--service-cluster-ip-range=100.64.0.0/13")
 	command = append(command, "--service-account-key-file=/srv/kubernetes/service-account-key/service_account.key")
+	command = append(command, "--service-cluster-ip-range=100.64.0.0/13")
 	command = append(command, "--shutdown-delay-duration=20s")
-	command = append(command, "--token-auth-file=/srv/kubernetes/token/static_tokens.csv")
 	command = append(command, "--tls-cert-file=/srv/kubernetes/apiserver/tls.crt")
-	command = append(command, "--tls-private-key-file=/srv/kubernetes/apiserver/tls.key")
 	command = append(command, "--tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA")
+	command = append(command, "--tls-private-key-file=/srv/kubernetes/apiserver/tls.key")
 	if o.isSNIEnabled() {
 		command = append(command, fmt.Sprintf("--tls-sni-cert-key=/srv/kubernetes/sni-tls/tls.crt,/srv/kubernetes/sni-tls/tls.key:%s", o.getSNIHostname()))
 	}
-	command = append(command, "--watch-cache-sizes=secrets#500,configmaps#500")
+	command = append(command, "--token-auth-file=/srv/kubernetes/token/static_tokens.csv")
 	command = append(command, "--v=2")
+	command = append(command, "--watch-cache-sizes=secrets#500,configmaps#500")
 
 	return command
 }
