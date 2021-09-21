@@ -19,7 +19,6 @@ import (
 	_ "embed"
 	"fmt"
 
-	"github.com/gardener/gardener/pkg/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -373,7 +372,7 @@ func (o *operation) getAPIServerHeaders(staticTokenHealthCheck string) []corev1.
 	return []corev1.HTTPHeader{
 		{
 			Name:  "Authorization",
-			Value: "Bearer " + utils.EncodeBase64([]byte(staticTokenHealthCheck)),
+			Value: "Bearer " + staticTokenHealthCheck,
 		},
 	}
 }
