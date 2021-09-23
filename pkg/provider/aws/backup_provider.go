@@ -16,6 +16,7 @@ package aws
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -25,16 +26,36 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+const (
+	dataKeyAccessKeyID     = "accessKeyID"
+	dataKeySecretAccessKey = "secretAccessKey"
+	dataKeyRegion          = "region"
+)
+
 type backupProvider struct {
-	bucketName string
-	region     string
+	bucketName      string
+	accessKeyID     string
+	secretAccessKey string
+	region          string
 }
 
 // NewBackupProvider creates a new GCP backup provider implementation from the given service account JSON.
 func NewBackupProvider(credentialsData map[string]string, bucketName, region string) (*backupProvider, error) {
+	accessKeyID, ok := credentialsData[dataKeyAccessKeyID]
+	if !ok {
+		return nil, fmt.Errorf("data map doesn't have an access key id")
+	}
+
+	secretAccessKey, ok := credentialsData[dataKeySecretAccessKey]
+	if !ok {
+		return nil, fmt.Errorf("data map doesn't have a secret access key")
+	}
+
 	return &backupProvider{
-		bucketName: bucketName,
-		region:     region,
+		bucketName:      bucketName,
+		accessKeyID:     accessKeyID,
+		secretAccessKey: secretAccessKey,
+		region:          region,
 	}, nil
 }
 
@@ -105,9 +126,38 @@ func (b *backupProvider) BucketExists(ctx context.Context) (bool, error) {
 	return false, nil
 }
 
-func (b *backupProvider) ComputeETCDBackupConfiguration(
-	etcdBackupSecretVolumeMountPath string) (storageProviderName string, secretData map[string][]byte, environment []corev1.EnvVar) {
-	return "", nil, nil
+func (b *backupProvider) ComputeETCDBackupConfiguration(etcdBackupSecretVolumeMountPath string) (storageProviderName string, secretData map[string][]byte, environment []corev1.EnvVar) {
+	storageProviderName = "S3"
+
+	secretData = map[string][]byte{
+		dataKeyAccessKeyID:     []byte(b.accessKeyID),
+		dataKeySecretAccessKey: []byte(b.secretAccessKey),
+		dataKeyRegion:          []byte(b.region),
+	}
+
+	environment = []corev1.EnvVar{
+		b.envVar("AWS_ACCESS_KEY_ID", dataKeyAccessKeyID),
+		b.envVar("AWS_SECRET_ACCESS_KEY", dataKeySecretAccessKey),
+		b.envVar("AWS_REGION", dataKeyRegion),
+	}
+
+	return
+}
+
+func (b *backupProvider) envVar(envVarName, dataKey string) corev1.EnvVar {
+	const etcdSecretNameBackup = "virtual-garden-etcd-main-backup" // ETCDSecretNameBackup
+
+	return corev1.EnvVar{
+		Name: envVarName,
+		ValueFrom: &corev1.EnvVarSource{
+			SecretKeyRef: &corev1.SecretKeySelector{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: etcdSecretNameBackup,
+				},
+				Key: dataKey,
+			},
+		},
+	}
 }
 
 func (b *backupProvider) getClient() (*s3.S3, error) {
