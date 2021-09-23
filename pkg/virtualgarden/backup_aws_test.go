@@ -2,9 +2,10 @@ package virtualgarden
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"os"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/aws/awserr"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -12,11 +13,10 @@ import (
 )
 
 const (
-	dummy = "..."
-    awsAccessKeyId = "AWS_ACCESS_KEY_ID"
+	dummy              = "..."
+	awsAccessKeyId     = "AWS_ACCESS_KEY_ID"
 	awsSecretAccessKey = "AWS_SECRET_ACCESS_KEY"
 )
-
 
 func TestAwsBackup(t *testing.T) {
 	// init
@@ -41,7 +41,7 @@ func TestAwsBackup(t *testing.T) {
 	svc := s3.New(sess)
 
 	// list buckets
-	listBuckets(err, svc)
+	listBuckets(svc)
 
 	// create bucket
 	fmt.Println("*** Create Bucket ***")
@@ -69,15 +69,20 @@ func TestAwsBackup(t *testing.T) {
 		err = svc.WaitUntilBucketExists(&s3.HeadBucketInput{
 			Bucket: aws.String(bucket),
 		})
+
+		if err != nil {
+			exitErrorf("Unable to wait for bucket %q ready, %v", bucket, err)
+		}
 	}
 
-	listBuckets(err, svc)
+	listBuckets(svc)
 
 	// delete bucket
 	fmt.Println("*** Create Bucket ***")
 	_, err = svc.DeleteBucket(&s3.DeleteBucketInput{
 		Bucket: aws.String(bucket),
 	})
+
 	if err != nil {
 		exitErrorf("Unable to delete bucket %q, %v", bucket, err)
 	}
@@ -88,9 +93,13 @@ func TestAwsBackup(t *testing.T) {
 	err = svc.WaitUntilBucketNotExists(&s3.HeadBucketInput{
 		Bucket: aws.String(bucket),
 	})
+
+	if err != nil {
+		exitErrorf("Unable to delete bucket %q, %v", bucket, err)
+	}
 }
 
-func listBuckets(err error, svc *s3.S3) {
+func listBuckets(svc *s3.S3) {
 	result, err := svc.ListBuckets(nil)
 	if err != nil {
 		exitErrorf("Unable to list buckets, %v", err)
