@@ -63,14 +63,6 @@ var _ = Describe("Provider", func() {
 			Expect(provider).To(BeNil())
 		})
 
-		It("should fail for aws", func() {
-			credentials := api.Credentials{}
-
-			provider, err := NewBackupProvider(api.InfrastructureProviderAWS, &credentials, "", "")
-			Expect(err).To(MatchError(ContainSubstring("unsupported")))
-			Expect(provider).To(BeNil())
-		})
-
 		It("should succeed for gcp", func() {
 			credentials := api.Credentials{
 				Data: map[string]string{gcp.DataKeyServiceAccountJSON: "{\"project_id\": \"my-project\"}"},

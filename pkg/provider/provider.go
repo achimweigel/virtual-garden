@@ -72,6 +72,8 @@ func NewBackupProvider(providerType api.InfrastructureProviderType, credentials 
 	switch providerType {
 	case api.InfrastructureProviderGCP:
 		return gcp.NewBackupProvider(credentials.Data, bucketName, region)
+	case api.InfrastructureProviderAWS:
+		return aws.NewBackupProvider(credentials.Data, bucketName, region)
 	case api.InfrastructureProviderFake:
 		backupSecretData := map[string][]byte{}
 
