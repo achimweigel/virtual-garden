@@ -38,15 +38,15 @@ func NewBackupProvider(backupSecretData map[string][]byte) *fakeBackupProvider {
 	return &fakeBackupProvider{backupSecretData}
 }
 
-func (f *fakeBackupProvider) CreateBucket(_ context.Context, _, _ string) error {
+func (f *fakeBackupProvider) CreateBucket(_ context.Context) error {
 	return nil
 }
 
-func (f *fakeBackupProvider) DeleteBucket(_ context.Context, _ string) error {
+func (f *fakeBackupProvider) DeleteBucket(_ context.Context) error {
 	return nil
 }
 
-func (f *fakeBackupProvider) BucketExists(_ context.Context, _ string) (bool, error) {
+func (f *fakeBackupProvider) BucketExists(_ context.Context) (bool, error) {
 	return false, nil
 }
 

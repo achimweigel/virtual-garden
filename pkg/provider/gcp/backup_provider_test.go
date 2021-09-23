@@ -40,7 +40,7 @@ var _ = Describe("BackupProvider", func() {
 		etcdBackupSecretVolumeMountPath := "/foo/bar"
 
 		It("should return the correct backup values", func() {
-			provider, err := NewBackupProvider(credentialsData)
+			provider, err := NewBackupProvider(credentialsData, "", "")
 			Expect(err).To(BeNil())
 
 			storageProviderName, secretData, environment := provider.ComputeETCDBackupConfiguration(etcdBackupSecretVolumeMountPath)

@@ -58,7 +58,7 @@ var _ = Describe("Provider", func() {
 		It("should fail for alicloud", func() {
 			credentials := api.Credentials{}
 
-			provider, err := NewBackupProvider(api.InfrastructureProviderAlicloud, &credentials)
+			provider, err := NewBackupProvider(api.InfrastructureProviderAlicloud, &credentials, "", "")
 			Expect(err).To(MatchError(ContainSubstring("unsupported")))
 			Expect(provider).To(BeNil())
 		})
@@ -66,7 +66,7 @@ var _ = Describe("Provider", func() {
 		It("should fail for aws", func() {
 			credentials := api.Credentials{}
 
-			provider, err := NewBackupProvider(api.InfrastructureProviderAWS, &credentials)
+			provider, err := NewBackupProvider(api.InfrastructureProviderAWS, &credentials, "", "")
 			Expect(err).To(MatchError(ContainSubstring("unsupported")))
 			Expect(provider).To(BeNil())
 		})
@@ -76,7 +76,7 @@ var _ = Describe("Provider", func() {
 				Data: map[string]string{gcp.DataKeyServiceAccountJSON: "{\"project_id\": \"my-project\"}"},
 			}
 
-			provider, err := NewBackupProvider(api.InfrastructureProviderGCP, &credentials)
+			provider, err := NewBackupProvider(api.InfrastructureProviderGCP, &credentials, "", "")
 			Expect(err).To(BeNil())
 			Expect(provider).NotTo(BeNil())
 		})
@@ -84,7 +84,7 @@ var _ = Describe("Provider", func() {
 		It("should fail for unsupported providers", func() {
 			credentials := api.Credentials{}
 
-			provider, err := NewBackupProvider(fooType, &credentials)
+			provider, err := NewBackupProvider(fooType, &credentials, "", "")
 			Expect(err).To(MatchError(ContainSubstring("unsupported")))
 			Expect(provider).To(BeNil())
 		})

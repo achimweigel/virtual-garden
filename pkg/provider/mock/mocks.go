@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	api "github.com/gardener/virtual-garden/pkg/api"
 	gomock "github.com/golang/mock/gomock"
 	v1 "k8s.io/api/core/v1"
 )
@@ -50,6 +51,34 @@ func (mr *MockInfrastructureProviderMockRecorder) ComputeStorageClassConfigurati
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ComputeStorageClassConfiguration", reflect.TypeOf((*MockInfrastructureProvider)(nil).ComputeStorageClassConfiguration))
 }
 
+// GetKubeAPIServerURL mocks base method.
+func (m *MockInfrastructureProvider) GetKubeAPIServerURL(arg0 *api.KubeAPIServer, arg1 string) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetKubeAPIServerURL", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetKubeAPIServerURL indicates an expected call of GetKubeAPIServerURL.
+func (mr *MockInfrastructureProviderMockRecorder) GetKubeAPIServerURL(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetKubeAPIServerURL", reflect.TypeOf((*MockInfrastructureProvider)(nil).GetKubeAPIServerURL), arg0, arg1)
+}
+
+// GetLoadBalancer mocks base method.
+func (m *MockInfrastructureProvider) GetLoadBalancer(arg0 *v1.Service) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLoadBalancer", arg0)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetLoadBalancer indicates an expected call of GetLoadBalancer.
+func (mr *MockInfrastructureProviderMockRecorder) GetLoadBalancer(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLoadBalancer", reflect.TypeOf((*MockInfrastructureProvider)(nil).GetLoadBalancer), arg0)
+}
+
 // MockBackupProvider is a mock of BackupProvider interface.
 type MockBackupProvider struct {
 	ctrl     *gomock.Controller
@@ -74,18 +103,18 @@ func (m *MockBackupProvider) EXPECT() *MockBackupProviderMockRecorder {
 }
 
 // BucketExists mocks base method.
-func (m *MockBackupProvider) BucketExists(arg0 context.Context, arg1 string) (bool, error) {
+func (m *MockBackupProvider) BucketExists(arg0 context.Context) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BucketExists", arg0, arg1)
+	ret := m.ctrl.Call(m, "BucketExists", arg0)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // BucketExists indicates an expected call of BucketExists.
-func (mr *MockBackupProviderMockRecorder) BucketExists(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBackupProviderMockRecorder) BucketExists(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BucketExists", reflect.TypeOf((*MockBackupProvider)(nil).BucketExists), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BucketExists", reflect.TypeOf((*MockBackupProvider)(nil).BucketExists), arg0)
 }
 
 // ComputeETCDBackupConfiguration mocks base method.
@@ -105,29 +134,29 @@ func (mr *MockBackupProviderMockRecorder) ComputeETCDBackupConfiguration(arg0 in
 }
 
 // CreateBucket mocks base method.
-func (m *MockBackupProvider) CreateBucket(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockBackupProvider) CreateBucket(arg0 context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateBucket", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "CreateBucket", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateBucket indicates an expected call of CreateBucket.
-func (mr *MockBackupProviderMockRecorder) CreateBucket(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockBackupProviderMockRecorder) CreateBucket(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBucket", reflect.TypeOf((*MockBackupProvider)(nil).CreateBucket), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBucket", reflect.TypeOf((*MockBackupProvider)(nil).CreateBucket), arg0)
 }
 
 // DeleteBucket mocks base method.
-func (m *MockBackupProvider) DeleteBucket(arg0 context.Context, arg1 string) error {
+func (m *MockBackupProvider) DeleteBucket(arg0 context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteBucket", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteBucket", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteBucket indicates an expected call of DeleteBucket.
-func (mr *MockBackupProviderMockRecorder) DeleteBucket(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBackupProviderMockRecorder) DeleteBucket(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBucket", reflect.TypeOf((*MockBackupProvider)(nil).DeleteBucket), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBucket", reflect.TypeOf((*MockBackupProvider)(nil).DeleteBucket), arg0)
 }

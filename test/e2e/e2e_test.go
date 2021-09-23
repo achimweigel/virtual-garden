@@ -277,10 +277,12 @@ func verifyReconciliationOfETCDBackupBucket(ctx context.Context, imports *api.Im
 
 	if helper.ETCDBackupEnabled(imports.VirtualGarden.ETCD) {
 		By("Checking that the blob storage bucket for etcd backup was created successfully")
-		backupProvider, err = provider.NewBackupProvider(imports.VirtualGarden.ETCD.Backup.InfrastructureProvider, imports.VirtualGarden.ETCD.Backup.Credentials)
+		backupProvider, err = provider.NewBackupProvider(imports.VirtualGarden.ETCD.Backup.InfrastructureProvider,
+			imports.VirtualGarden.ETCD.Backup.Credentials, imports.VirtualGarden.ETCD.Backup.BucketName,
+			imports.VirtualGarden.ETCD.Backup.Region)
 		Expect(err).NotTo(HaveOccurred())
 
-		bucketExists, err := backupProvider.BucketExists(ctx, imports.VirtualGarden.ETCD.Backup.BucketName)
+		bucketExists, err := backupProvider.BucketExists(ctx)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(bucketExists).To(BeTrue())
 	}
@@ -696,10 +698,11 @@ func verifyDeletionOfBackupBucket(ctx context.Context, c client.Client, imports 
 
 		By("Checking that the blob storage bucket was deleted successfully")
 		backupProvider, err := provider.NewBackupProvider(imports.VirtualGarden.ETCD.Backup.InfrastructureProvider,
-			imports.VirtualGarden.ETCD.Backup.Credentials)
+			imports.VirtualGarden.ETCD.Backup.Credentials, imports.VirtualGarden.ETCD.Backup.BucketName,
+			imports.VirtualGarden.ETCD.Backup.Region)
 		Expect(err).NotTo(HaveOccurred())
 
-		bucketExists, err := backupProvider.BucketExists(ctx, imports.VirtualGarden.ETCD.Backup.BucketName)
+		bucketExists, err := backupProvider.BucketExists(ctx)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(bucketExists).To(BeFalse())
 	}

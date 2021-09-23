@@ -88,6 +88,10 @@ revendor:
 	@chmod +x $(REPO_ROOT)/vendor/github.com/gardener/gardener/hack/*
 	@$(REPO_ROOT)/hack/update-github-templates.sh
 
+.PHONY: generate
+generate:
+	@GO111MODULE=on go generate ./...
+
 .PHONY: clean
 clean:
 	@$(REPO_ROOT)/vendor/github.com/gardener/gardener/hack/clean.sh ./cmd/... ./pkg/... ./test/...

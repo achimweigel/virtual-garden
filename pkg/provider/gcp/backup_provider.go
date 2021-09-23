@@ -28,10 +28,12 @@ type backupProvider struct {
 	storageClient      *storage.Client
 	serviceAccountJSON []byte
 	projectID          string
+	bucketName         string
+	region             string
 }
 
 // NewBackupProvider creates a new GCP backup provider implementation from the given service account JSON.
-func NewBackupProvider(credentialsData map[string]string) (*backupProvider, error) {
+func NewBackupProvider(credentialsData map[string]string, bucketName, region string) (*backupProvider, error) {
 	serviceAccountJSON, err := ReadServiceAccount(credentialsData)
 	if err != nil {
 		return nil, err
@@ -45,6 +47,8 @@ func NewBackupProvider(credentialsData map[string]string) (*backupProvider, erro
 	return &backupProvider{
 		serviceAccountJSON: []byte(serviceAccountJSON),
 		projectID:          projectID,
+		bucketName:         bucketName,
+		region:             region,
 	}, nil
 }
 
@@ -64,16 +68,16 @@ func (b *backupProvider) initializeStorageClient(ctx context.Context) error {
 	return nil
 }
 
-func (b *backupProvider) CreateBucket(ctx context.Context, bucketName, region string) error {
+func (b *backupProvider) CreateBucket(ctx context.Context) error {
 	if b.storageClient == nil {
 		if err := b.initializeStorageClient(ctx); err != nil {
 			return err
 		}
 	}
 
-	if err := b.storageClient.Bucket(bucketName).Create(ctx, b.projectID, &storage.BucketAttrs{
-		Name:     bucketName,
-		Location: region,
+	if err := b.storageClient.Bucket(b.bucketName).Create(ctx, b.projectID, &storage.BucketAttrs{
+		Name:     b.bucketName,
+		Location: b.region,
 	}); err != nil {
 		if gerr, ok := err.(*googleapi.Error); ok && gerr.Code == errCodeBucketAlreadyOwnedByYou {
 			return nil
@@ -83,32 +87,32 @@ func (b *backupProvider) CreateBucket(ctx context.Context, bucketName, region st
 	return nil
 }
 
-func (b *backupProvider) DeleteBucket(ctx context.Context, bucketName string) error {
+func (b *backupProvider) DeleteBucket(ctx context.Context) error {
 	if b.storageClient == nil {
 		if err := b.initializeStorageClient(ctx); err != nil {
 			return err
 		}
 	}
 
-	if err := deleteAllObjects(ctx, b.storageClient, bucketName); err != nil {
+	if err := deleteAllObjects(ctx, b.storageClient, b.bucketName); err != nil {
 		return err
 	}
 
-	if err := b.storageClient.Bucket(bucketName).Delete(ctx); err != nil && err != storage.ErrBucketNotExist {
+	if err := b.storageClient.Bucket(b.bucketName).Delete(ctx); err != nil && err != storage.ErrBucketNotExist {
 		return err
 	}
 
 	return nil
 }
 
-func (b *backupProvider) BucketExists(ctx context.Context, bucketName string) (bool, error) {
+func (b *backupProvider) BucketExists(ctx context.Context) (bool, error) {
 	if b.storageClient == nil {
 		if err := b.initializeStorageClient(ctx); err != nil {
 			return false, err
 		}
 	}
 
-	if _, err := b.storageClient.Bucket(bucketName).Attrs(ctx); err != nil {
+	if _, err := b.storageClient.Bucket(b.bucketName).Attrs(ctx); err != nil {
 		if err != storage.ErrBucketNotExist {
 			return false, err
 		}

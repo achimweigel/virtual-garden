@@ -52,12 +52,12 @@ func NewInfrastructureProvider(providerType api.InfrastructureProviderType) (Inf
 
 // BackupProvider is an interface for backup providers.
 type BackupProvider interface {
-	// CreateBucket shall create a blob storage bucket with the given name in the given region.
-	CreateBucket(ctx context.Context, bucketName, region string) error
-	// DeleteBucket shall delete a blob storage bucket and all its contents with the given name.
-	DeleteBucket(ctx context.Context, bucketName string) error
+	// CreateBucket shall create a blob storage bucket.
+	CreateBucket(ctx context.Context) error
+	// DeleteBucket shall delete a blob storage bucket.
+	DeleteBucket(ctx context.Context) error
 	// BucketExists shall return whether the blob storage bucket exists.
-	BucketExists(ctx context.Context, bucketName string) (bool, error)
+	BucketExists(ctx context.Context) (bool, error)
 	// ComputeETCDBackupConfiguration shall compute the configuration for the etcd-backup-restore sidecar container that
 	// runs in the etcd statefulset. It takes the volume name of the etcd backup secret and should return the name of
 	// the blob storage provider, the secret data for the etcd backup secret, and optional environment variables that
@@ -66,11 +66,12 @@ type BackupProvider interface {
 }
 
 // NewBackupProvider returns a new InfrastructureProvider interface for the given provider type.
-func NewBackupProvider(providerType api.InfrastructureProviderType, credentials *api.Credentials) (BackupProvider, error) {
+func NewBackupProvider(providerType api.InfrastructureProviderType, credentials *api.Credentials, bucketName,
+	region string) (BackupProvider, error) {
 
 	switch providerType {
 	case api.InfrastructureProviderGCP:
-		return gcp.NewBackupProvider(credentials.Data)
+		return gcp.NewBackupProvider(credentials.Data, bucketName, region)
 	case api.InfrastructureProviderFake:
 		backupSecretData := map[string][]byte{}
 
