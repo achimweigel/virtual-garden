@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 
 	corev1 "k8s.io/api/core/v1"
 )
@@ -101,12 +102,29 @@ func (b *backupProvider) DeleteBucket(ctx context.Context) error {
 		return err
 	}
 
+	iter := s3manager.NewDeleteListIterator(svc, &s3.ListObjectsInput{
+		Bucket: aws.String(b.bucketName),
+	})
+
+	if err := s3manager.NewBatchDeleteWithClient(svc).Delete(aws.BackgroundContext(), iter); err != nil {
+		return err
+	}
+
 	_, err = svc.DeleteBucket(&s3.DeleteBucketInput{
 		Bucket: aws.String(b.bucketName),
 	})
 
 	if err != nil {
-		return err
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case s3.ErrCodeNoSuchBucket:
+				return nil
+			default:
+				return err
+			}
+		} else {
+			return err
+		}
 	}
 
 	return svc.WaitUntilBucketNotExists(&s3.HeadBucketInput{

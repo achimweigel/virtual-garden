@@ -53,7 +53,7 @@ func NewBackupProvider(credentialsData map[string]string, bucketName, region str
 }
 
 const (
-	errCodeBucketNotFound = 404
+	errCodeBucketNotFound          = 404
 	errCodeBucketAlreadyOwnedByYou = 409
 )
 

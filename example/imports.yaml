@@ -34,8 +34,8 @@ virtualGarden:
 
 ### backup settings for S3
 #    backup:
-#      infrastructureProvider: s3
-#      region: europe-west4
+#      infrastructureProvider: aws
+#      region: eu-central-1
 #      bucketName: testvirtualgarden
 #      credentials:
 #        data:
