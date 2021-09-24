@@ -118,9 +118,9 @@ func (mr *MockBackupProviderMockRecorder) BucketExists(arg0 interface{}) *gomock
 }
 
 // ComputeETCDBackupConfiguration mocks base method.
-func (m *MockBackupProvider) ComputeETCDBackupConfiguration(arg0 string) (string, map[string][]byte, []v1.EnvVar) {
+func (m *MockBackupProvider) ComputeETCDBackupConfiguration(arg0, arg1 string) (string, map[string][]byte, []v1.EnvVar) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ComputeETCDBackupConfiguration", arg0)
+	ret := m.ctrl.Call(m, "ComputeETCDBackupConfiguration", arg0, arg1)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(map[string][]byte)
 	ret2, _ := ret[2].([]v1.EnvVar)
@@ -128,9 +128,9 @@ func (m *MockBackupProvider) ComputeETCDBackupConfiguration(arg0 string) (string
 }
 
 // ComputeETCDBackupConfiguration indicates an expected call of ComputeETCDBackupConfiguration.
-func (mr *MockBackupProviderMockRecorder) ComputeETCDBackupConfiguration(arg0 interface{}) *gomock.Call {
+func (mr *MockBackupProviderMockRecorder) ComputeETCDBackupConfiguration(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ComputeETCDBackupConfiguration", reflect.TypeOf((*MockBackupProvider)(nil).ComputeETCDBackupConfiguration), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ComputeETCDBackupConfiguration", reflect.TypeOf((*MockBackupProvider)(nil).ComputeETCDBackupConfiguration), arg0, arg1)
 }
 
 // CreateBucket mocks base method.

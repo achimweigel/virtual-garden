@@ -143,7 +143,7 @@ func deleteAllObjects(ctx context.Context, storageClient *storage.Client, bucket
 	}
 }
 
-func (b *backupProvider) ComputeETCDBackupConfiguration(etcdBackupSecretVolumeMountPath string) (storageProviderName string, secretData map[string][]byte, environment []corev1.EnvVar) {
+func (b *backupProvider) ComputeETCDBackupConfiguration(etcdBackupSecretVolumeMountPath, _ string) (storageProviderName string, secretData map[string][]byte, environment []corev1.EnvVar) {
 	storageProviderName = "GCS"
 	secretData = map[string][]byte{DataKeyServiceAccountJSON: b.serviceAccountJSON}
 	environment = []corev1.EnvVar{{

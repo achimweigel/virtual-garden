@@ -43,7 +43,7 @@ var _ = Describe("BackupProvider", func() {
 			provider, err := NewBackupProvider(credentialsData, "", "")
 			Expect(err).To(BeNil())
 
-			storageProviderName, secretData, environment := provider.ComputeETCDBackupConfiguration(etcdBackupSecretVolumeMountPath)
+			storageProviderName, secretData, environment := provider.ComputeETCDBackupConfiguration(etcdBackupSecretVolumeMountPath, "")
 			Expect(storageProviderName).To(Equal("GCS"))
 			Expect(secretData).To(Equal(map[string][]byte{DataKeyServiceAccountJSON: []byte(serviceAccountData)}))
 			Expect(environment).To(Equal([]corev1.EnvVar{{

@@ -62,7 +62,7 @@ type BackupProvider interface {
 	// runs in the etcd statefulset. It takes the volume name of the etcd backup secret and should return the name of
 	// the blob storage provider, the secret data for the etcd backup secret, and optional environment variables that
 	// will be injected into the sidecar container.
-	ComputeETCDBackupConfiguration(etcdBackupSecretVolumeName string) (storageProviderName string, secretData map[string][]byte, environment []corev1.EnvVar)
+	ComputeETCDBackupConfiguration(etcdBackupSecretVolumeName, etcdSecretNameBackup string) (storageProviderName string, secretData map[string][]byte, environment []corev1.EnvVar)
 }
 
 // NewBackupProvider returns a new InfrastructureProvider interface for the given provider type.

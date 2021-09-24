@@ -16,6 +16,8 @@ virtualGarden:
   etcd:
     storageClassName: my-virtual-garden-storage-class
     handleETCDPersistentVolumes: true
+
+### backup settings for GCS
 #    backup:
 #      infrastructureProvider: gcp
 #      region: europe-west4
@@ -29,6 +31,18 @@ virtualGarden:
 #              "private_key_id": "...",
 #              ...
 #            }
+
+### backup settings for S3
+#    backup:
+#      infrastructureProvider: s3
+#      region: europe-west4
+#      bucketName: testvirtualgarden
+#      credentials:
+#        data:
+#          accessKeyID:     "your access key id"
+#          secretAccessKey: "your secret access key"
+
+  accessKeyID
   kubeAPIServer:
     replicas: 1
     dnsAccessDomain: ""

@@ -338,7 +338,7 @@ func verifyReconciliationOfETCDBackupSecret(ctx context.Context, c client.Client
 	if helper.ETCDBackupEnabled(imports.VirtualGarden.ETCD) {
 		backupSecret := &corev1.Secret{}
 		Expect(c.Get(ctx, client.ObjectKey{Name: virtualgarden.ETCDSecretNameBackup, Namespace: imports.HostingCluster.Namespace}, backupSecret)).To(Succeed())
-		_, secretData, _ := backupProvider.ComputeETCDBackupConfiguration(virtualgarden.ETCDVolumeMountPathBackupSecret)
+		_, secretData, _ := backupProvider.ComputeETCDBackupConfiguration(virtualgarden.ETCDVolumeMountPathBackupSecret, virtualgarden.ETCDSecretNameBackup)
 		Expect(backupSecret.Data).To(Equal(secretData))
 	}
 }
@@ -424,7 +424,7 @@ func verifyReconciliationOfETCDStatefulSet(ctx context.Context, c client.Client,
 	Expect(sts.Spec.Template.Labels).To(HaveKeyWithValue("role", role))
 	Expect(sts.Spec.Template.Spec.Containers).To(HaveLen(2))
 	if role == virtualgarden.ETCDRoleMain && helper.ETCDBackupEnabled(imports.VirtualGarden.ETCD) {
-		storageProviderName, _, environment := backupProvider.ComputeETCDBackupConfiguration(virtualgarden.ETCDVolumeMountPathBackupSecret)
+		storageProviderName, _, environment := backupProvider.ComputeETCDBackupConfiguration(virtualgarden.ETCDVolumeMountPathBackupSecret, virtualgarden.ETCDSecretNameBackup)
 		Expect(sts.Spec.Template.Annotations).To(HaveKey("checksum/secret-etcd-backup"))
 		Expect(sts.Spec.Template.Spec.Containers[1].Env).To(ConsistOf(append([]corev1.EnvVar{{
 			Name:  "STORAGE_CONTAINER",

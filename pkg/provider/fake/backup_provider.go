@@ -50,6 +50,6 @@ func (f *fakeBackupProvider) BucketExists(_ context.Context) (bool, error) {
 	return false, nil
 }
 
-func (f *fakeBackupProvider) ComputeETCDBackupConfiguration(_ string) (string, map[string][]byte, []corev1.EnvVar) {
+func (f *fakeBackupProvider) ComputeETCDBackupConfiguration(_, _ string) (string, map[string][]byte, []corev1.EnvVar) {
 	return FakeProviderName, f.backupSecretData, FakeEnv
 }

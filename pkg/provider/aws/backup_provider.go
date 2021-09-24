@@ -17,6 +17,7 @@ package aws
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -27,6 +28,10 @@ import (
 )
 
 const (
+	envVarAccessKeyID     = "AWS_ACCESS_KEY_ID"
+	envVarSecretAccessKey = "AWS_SECRET_ACCESS_KEY"
+	envVarRegion          = "AWS_REGION"
+
 	dataKeyAccessKeyID     = "accessKeyID"
 	dataKeySecretAccessKey = "secretAccessKey"
 	dataKeyRegion          = "region"
@@ -50,6 +55,9 @@ func NewBackupProvider(credentialsData map[string]string, bucketName, region str
 	if !ok {
 		return nil, fmt.Errorf("data map doesn't have a secret access key")
 	}
+
+	os.Setenv(envVarAccessKeyID, accessKeyID)
+	os.Setenv(envVarSecretAccessKey, secretAccessKey)
 
 	return &backupProvider{
 		bucketName:      bucketName,
@@ -126,7 +134,7 @@ func (b *backupProvider) BucketExists(ctx context.Context) (bool, error) {
 	return false, nil
 }
 
-func (b *backupProvider) ComputeETCDBackupConfiguration(etcdBackupSecretVolumeMountPath string) (storageProviderName string, secretData map[string][]byte, environment []corev1.EnvVar) {
+func (b *backupProvider) ComputeETCDBackupConfiguration(_, etcdSecretNameBackup string) (storageProviderName string, secretData map[string][]byte, environment []corev1.EnvVar) {
 	storageProviderName = "S3"
 
 	secretData = map[string][]byte{
@@ -136,17 +144,15 @@ func (b *backupProvider) ComputeETCDBackupConfiguration(etcdBackupSecretVolumeMo
 	}
 
 	environment = []corev1.EnvVar{
-		b.envVar("AWS_ACCESS_KEY_ID", dataKeyAccessKeyID),
-		b.envVar("AWS_SECRET_ACCESS_KEY", dataKeySecretAccessKey),
-		b.envVar("AWS_REGION", dataKeyRegion),
+		b.envVar(envVarAccessKeyID, etcdSecretNameBackup, dataKeyAccessKeyID),
+		b.envVar(envVarSecretAccessKey, etcdSecretNameBackup, dataKeySecretAccessKey),
+		b.envVar(envVarRegion, etcdSecretNameBackup, dataKeyRegion),
 	}
 
 	return
 }
 
-func (b *backupProvider) envVar(envVarName, dataKey string) corev1.EnvVar {
-	const etcdSecretNameBackup = "virtual-garden-etcd-main-backup" // ETCDSecretNameBackup
-
+func (b *backupProvider) envVar(envVarName, etcdSecretNameBackup, dataKey string) corev1.EnvVar {
 	return corev1.EnvVar{
 		Name: envVarName,
 		ValueFrom: &corev1.EnvVarSource{
