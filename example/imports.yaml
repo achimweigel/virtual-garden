@@ -42,7 +42,6 @@ virtualGarden:
 #          accessKeyID:     "your access key id"
 #          secretAccessKey: "your secret access key"
 
-  accessKeyID
   kubeAPIServer:
     replicas: 1
     dnsAccessDomain: ""

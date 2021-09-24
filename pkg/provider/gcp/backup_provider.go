@@ -52,7 +52,10 @@ func NewBackupProvider(credentialsData map[string]string, bucketName, region str
 	}, nil
 }
 
-const errCodeBucketAlreadyOwnedByYou = 409
+const (
+	errCodeBucketNotFound = 404
+	errCodeBucketAlreadyOwnedByYou = 409
+)
 
 func (b *backupProvider) initializeStorageClient(ctx context.Context) error {
 	if b.storageClient != nil {
@@ -94,11 +97,16 @@ func (b *backupProvider) DeleteBucket(ctx context.Context) error {
 		}
 	}
 
-	if err := deleteAllObjects(ctx, b.storageClient, b.bucketName); err != nil {
+	if err := deleteAllObjects(ctx, b.storageClient, b.bucketName); err != nil && err != storage.ErrBucketNotExist {
 		return err
 	}
 
-	if err := b.storageClient.Bucket(b.bucketName).Delete(ctx); err != nil && err != storage.ErrBucketNotExist {
+	if err := b.storageClient.Bucket(b.bucketName).Delete(ctx); err != nil {
+		gerr, ok := err.(*googleapi.Error)
+		if ok && gerr.Code == errCodeBucketNotFound {
+			return nil
+		}
+
 		return err
 	}
 
