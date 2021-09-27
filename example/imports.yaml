@@ -17,6 +17,16 @@ virtualGarden:
     storageClassName: my-virtual-garden-storage-class
     handleETCDPersistentVolumes: true
 
+### backup settings for OSS (alicloud)
+#    backup:
+#      infrastructureProvider: alicloud
+#      region: oss-eu-central-1.aliyuncs.com
+#      bucketName: testvirtualgarden
+#      credentials:
+#        data:
+#          accessKeyID:     "your access key id"
+#          accessKeySecret: "your access key secret"
+
 ### backup settings for GCS
 #    backup:
 #      infrastructureProvider: gcp

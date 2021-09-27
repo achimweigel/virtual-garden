@@ -70,6 +70,9 @@ func NewBackupProvider(providerType api.InfrastructureProviderType, credentials 
 	region string) (BackupProvider, error) {
 
 	switch providerType {
+	case api.InfrastructureProviderAlicloud:
+		storageEndpoint := region // todo: discuss whether the storageEndpoint should be a separate import
+		return alicloud.NewBackupProvider(credentials.Data, bucketName, storageEndpoint)
 	case api.InfrastructureProviderGCP:
 		return gcp.NewBackupProvider(credentials.Data, bucketName, region)
 	case api.InfrastructureProviderAWS:

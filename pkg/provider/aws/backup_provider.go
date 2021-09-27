@@ -45,7 +45,7 @@ type backupProvider struct {
 	region          string
 }
 
-// NewBackupProvider creates a new GCP backup provider implementation from the given service account JSON.
+// NewBackupProvider creates a new S3 backup provider implementation.
 func NewBackupProvider(credentialsData map[string]string, bucketName, region string) (*backupProvider, error) {
 	accessKeyID, ok := credentialsData[dataKeyAccessKeyID]
 	if !ok {
