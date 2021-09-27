@@ -23,6 +23,9 @@ github.com/PuerkitoBio/purell
 github.com/PuerkitoBio/urlesc
 # github.com/ahmetb/gen-crd-api-reference-docs v0.2.0
 github.com/ahmetb/gen-crd-api-reference-docs
+# github.com/aliyun/aliyun-oss-go-sdk v2.1.10+incompatible
+## explicit
+github.com/aliyun/aliyun-oss-go-sdk/oss
 # github.com/aws/aws-sdk-go v1.40.47
 ## explicit
 github.com/aws/aws-sdk-go/aws

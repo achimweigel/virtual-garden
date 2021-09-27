@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	cloud.google.com/go/storage v1.6.0
+	github.com/aliyun/aliyun-oss-go-sdk v2.1.10+incompatible
 	github.com/aws/aws-sdk-go v1.40.47
 	github.com/gardener/component-cli v0.21.0
 	github.com/gardener/component-spec/bindings-go v0.0.51
