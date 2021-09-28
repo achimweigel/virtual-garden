@@ -100,6 +100,7 @@ func (b *backupProvider) DeleteBucket(ctx context.Context) error {
 	b.log.Infof("Deleting objects of bucket %q", b.bucketName)
 	marker := ""
 	for {
+		b.log.Infof("Deleting objects of bucket %q starting with marker %q", b.bucketName, marker)
 		listResult, err := bucket.ListObjects(oss.Marker(marker))
 		if err != nil {
 			if ossErr, ok := err.(oss.ServiceError); ok {
@@ -115,7 +116,6 @@ func (b *backupProvider) DeleteBucket(ctx context.Context) error {
 		}
 
 		for _, object := range listResult.Objects {
-			b.log.Infof("Deleting object %q of bucket %q", object.Key, b.bucketName)
 			err = bucket.DeleteObject(object.Key)
 			if err != nil {
 				return fmt.Errorf("failed to delete object %q of alicloud backup bucket %q: %w", object.Key, b.bucketName, err)
