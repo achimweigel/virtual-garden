@@ -18,6 +18,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/gardener/virtual-garden/pkg/api"
 	"github.com/gardener/virtual-garden/pkg/provider/alicloud"
 	"github.com/gardener/virtual-garden/pkg/provider/aws"
@@ -67,12 +69,12 @@ type BackupProvider interface {
 
 // NewBackupProvider returns a new InfrastructureProvider interface for the given provider type.
 func NewBackupProvider(providerType api.InfrastructureProviderType, credentials *api.Credentials, bucketName,
-	region string) (BackupProvider, error) {
+	region string, log *logrus.Logger) (BackupProvider, error) {
 
 	switch providerType {
 	case api.InfrastructureProviderAlicloud:
 		storageEndpoint := region // todo: discuss whether the storageEndpoint should be a separate import
-		return alicloud.NewBackupProvider(credentials.Data, bucketName, storageEndpoint)
+		return alicloud.NewBackupProvider(credentials.Data, bucketName, storageEndpoint, log)
 	case api.InfrastructureProviderGCP:
 		return gcp.NewBackupProvider(credentials.Data, bucketName, region)
 	case api.InfrastructureProviderAWS:

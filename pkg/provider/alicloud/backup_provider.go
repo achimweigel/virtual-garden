@@ -18,6 +18,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -41,10 +43,15 @@ type backupProvider struct {
 	accessKeyID     string
 	secretAccessKey string
 	storageEndpoint string
+	log             *logrus.Logger
 }
 
 // NewBackupProvider creates a new oss backup provider implementation.
-func NewBackupProvider(credentialsData map[string]string, bucketName, storageEndpoint string) (*backupProvider, error) {
+func NewBackupProvider(
+	credentialsData map[string]string,
+	bucketName, storageEndpoint string,
+	log *logrus.Logger,
+) (*backupProvider, error) {
 	accessKeyID, ok := credentialsData[dataKeyAccessKeyID]
 	if !ok {
 		return nil, fmt.Errorf("data map doesn't have an access key id")
@@ -60,6 +67,7 @@ func NewBackupProvider(credentialsData map[string]string, bucketName, storageEnd
 		accessKeyID:     accessKeyID,
 		secretAccessKey: secretAccessKey,
 		storageEndpoint: storageEndpoint,
+		log:             log,
 	}, nil
 }
 
@@ -69,9 +77,10 @@ func (b *backupProvider) CreateBucket(ctx context.Context) error {
 		return err
 	}
 
+	b.log.Infof("Ensuring that backup bucket %q exists", b.bucketName)
 	err = svc.CreateBucket(b.bucketName, oss.ACL(oss.ACLPrivate))
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create alicloud backup bucket %q: %w", b.bucketName, err)
 	}
 
 	return nil
@@ -85,10 +94,10 @@ func (b *backupProvider) DeleteBucket(ctx context.Context) error {
 
 	bucket, err := svc.Bucket(b.bucketName)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get alicloud backup bucket %q: %w", b.bucketName, err)
 	}
 
-	fmt.Printf("Deleting objects of bucket %s\n", b.bucketName)
+	b.log.Infof("Deleting objects of bucket %q", b.bucketName)
 	marker := ""
 	for {
 		listResult, err := bucket.ListObjects(oss.Marker(marker))
@@ -98,19 +107,18 @@ func (b *backupProvider) DeleteBucket(ctx context.Context) error {
 				case ossErrorCodeNoSuchBucket:
 					return nil
 				default:
-					return err
+					return fmt.Errorf("failed to list objects of alicloud backup bucket %q: %w", b.bucketName, err)
 				}
 			}
 
-			return err
+			return fmt.Errorf("failed to list objects of alicloud backup bucket %q: %w", b.bucketName, err)
 		}
 
 		for _, object := range listResult.Objects {
-			fmt.Printf("Deleting object %s of bucket %s\n", object.Key, b.bucketName)
-
+			b.log.Infof("Deleting object %q of bucket %q", object.Key, b.bucketName)
 			err = bucket.DeleteObject(object.Key)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to delete object %q of alicloud backup bucket %q: %w", object.Key, b.bucketName, err)
 			}
 		}
 
@@ -121,6 +129,7 @@ func (b *backupProvider) DeleteBucket(ctx context.Context) error {
 		}
 	}
 
+	b.log.Infof("Deleting bucket %q", b.bucketName)
 	err = svc.DeleteBucket(b.bucketName)
 	if err != nil {
 		if ossErr, ok := err.(oss.ServiceError); ok {
@@ -128,11 +137,11 @@ func (b *backupProvider) DeleteBucket(ctx context.Context) error {
 			case ossErrorCodeNoSuchBucket:
 				return nil
 			default:
-				return err
+				return fmt.Errorf("failed to delete alicloud backup bucket %q: %w", b.bucketName, err)
 			}
 		}
 
-		return err
+		return fmt.Errorf("failed to delete alicloud backup bucket %q: %w", b.bucketName, err)
 	}
 
 	return nil
@@ -141,7 +150,7 @@ func (b *backupProvider) DeleteBucket(ctx context.Context) error {
 func (b *backupProvider) BucketExists(ctx context.Context) (bool, error) {
 	svc, err := b.getClient()
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("failed to check existence of alicloud backup bucket %q: %w", b.bucketName, err)
 	}
 
 	return svc.IsBucketExist(b.bucketName)
@@ -186,7 +195,7 @@ func (b *backupProvider) envVar(envVarName, etcdSecretNameBackup, dataKey string
 func (b *backupProvider) getClient() (*oss.Client, error) {
 	client, err := oss.New(b.storageEndpoint, b.accessKeyID, b.secretAccessKey)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get alicloud client to manage backup bucket: %w", err)
 	}
 
 	return client, nil

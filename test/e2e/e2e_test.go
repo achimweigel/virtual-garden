@@ -24,6 +24,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	cdv2 "github.com/gardener/component-spec/bindings-go/apis/v2"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -277,9 +279,10 @@ func verifyReconciliationOfETCDBackupBucket(ctx context.Context, imports *api.Im
 
 	if helper.ETCDBackupEnabled(imports.VirtualGarden.ETCD) {
 		By("Checking that the blob storage bucket for etcd backup was created successfully")
+		log := &logrus.Logger{Out: ioutil.Discard}
 		backupProvider, err = provider.NewBackupProvider(imports.VirtualGarden.ETCD.Backup.InfrastructureProvider,
 			imports.VirtualGarden.ETCD.Backup.Credentials, imports.VirtualGarden.ETCD.Backup.BucketName,
-			imports.VirtualGarden.ETCD.Backup.Region)
+			imports.VirtualGarden.ETCD.Backup.Region, log)
 		Expect(err).NotTo(HaveOccurred())
 
 		bucketExists, err := backupProvider.BucketExists(ctx)
@@ -697,9 +700,10 @@ func verifyDeletionOfBackupBucket(ctx context.Context, c client.Client, imports 
 		Expect(apierrors.IsNotFound(c.Get(ctx, client.ObjectKey{Name: virtualgarden.ETCDSecretNameBackup, Namespace: imports.HostingCluster.Namespace}, &corev1.Secret{}))).To(BeTrue())
 
 		By("Checking that the blob storage bucket was deleted successfully")
+		log := &logrus.Logger{Out: ioutil.Discard}
 		backupProvider, err := provider.NewBackupProvider(imports.VirtualGarden.ETCD.Backup.InfrastructureProvider,
 			imports.VirtualGarden.ETCD.Backup.Credentials, imports.VirtualGarden.ETCD.Backup.BucketName,
-			imports.VirtualGarden.ETCD.Backup.Region)
+			imports.VirtualGarden.ETCD.Backup.Region, log)
 		Expect(err).NotTo(HaveOccurred())
 
 		bucketExists, err := backupProvider.BucketExists(ctx)
