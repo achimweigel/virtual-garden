@@ -29,9 +29,9 @@ const (
 	envVarAccessKeySecret = "ALICLOUD_ACCESS_KEY_SECRET"
 	envVarStorageEndpoint = "ALICLOUD_ENDPOINT"
 
-	dataKeyAccessKeyID     = "accessKeyID"
-	dataKeyAccessKeySecret = "accessKeySecret"
-	dataKeyStorageEndpoint = "storageEndpoint"
+	DataKeyAccessKeyID     = "accessKeyID"
+	DataKeyAccessKeySecret = "accessKeySecret"
+	DataKeyStorageEndpoint = "storageEndpoint"
 
 	storageProviderNameOSS = "OSS"
 
@@ -52,12 +52,12 @@ func NewBackupProvider(
 	bucketName, storageEndpoint string,
 	log *logrus.Logger,
 ) (*backupProvider, error) {
-	accessKeyID, ok := credentialsData[dataKeyAccessKeyID]
+	accessKeyID, ok := credentialsData[DataKeyAccessKeyID]
 	if !ok {
 		return nil, fmt.Errorf("data map doesn't have an access key id")
 	}
 
-	secretAccessKey, ok := credentialsData[dataKeyAccessKeySecret]
+	secretAccessKey, ok := credentialsData[DataKeyAccessKeySecret]
 	if !ok {
 		return nil, fmt.Errorf("data map doesn't have an access key secret")
 	}
@@ -164,15 +164,15 @@ func (b *backupProvider) ComputeETCDBackupConfiguration(_, etcdSecretNameBackup 
 	storageProviderName = storageProviderNameOSS
 
 	secretData = map[string][]byte{
-		dataKeyAccessKeyID:     []byte(b.accessKeyID),
-		dataKeyAccessKeySecret: []byte(b.secretAccessKey),
-		dataKeyStorageEndpoint: []byte(b.storageEndpoint),
+		DataKeyAccessKeyID:     []byte(b.accessKeyID),
+		DataKeyAccessKeySecret: []byte(b.secretAccessKey),
+		DataKeyStorageEndpoint: []byte(b.storageEndpoint),
 	}
 
 	environment = []corev1.EnvVar{
-		b.envVar(envVarAccessKeyID, etcdSecretNameBackup, dataKeyAccessKeyID),
-		b.envVar(envVarAccessKeySecret, etcdSecretNameBackup, dataKeyAccessKeySecret),
-		b.envVar(envVarStorageEndpoint, etcdSecretNameBackup, dataKeyStorageEndpoint),
+		b.envVar(envVarAccessKeyID, etcdSecretNameBackup, DataKeyAccessKeyID),
+		b.envVar(envVarAccessKeySecret, etcdSecretNameBackup, DataKeyAccessKeySecret),
+		b.envVar(envVarStorageEndpoint, etcdSecretNameBackup, DataKeyStorageEndpoint),
 	}
 
 	return

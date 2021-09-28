@@ -15,6 +15,7 @@
 package provider_test
 
 import (
+	"github.com/gardener/virtual-garden/pkg/provider/alicloud"
 	"io/ioutil"
 
 	"github.com/gardener/virtual-garden/pkg/api"
@@ -59,12 +60,18 @@ var _ = Describe("Provider", func() {
 			log     = &logrus.Logger{Out: ioutil.Discard}
 		)
 
-		It("should fail for alicloud", func() {
-			credentials := api.Credentials{}
+		It("should succeed for alicloud", func() {
+			credentials := api.Credentials{
+				Data: map[string]string{
+					alicloud.DataKeyAccessKeyID: "test-id",
+					alicloud.DataKeyAccessKeySecret: "test-secret",
+					alicloud.DataKeyStorageEndpoint: "test-endpoint",
+				},
+			}
 
 			provider, err := NewBackupProvider(api.InfrastructureProviderAlicloud, &credentials, "", "", log)
-			Expect(err).To(MatchError(ContainSubstring("unsupported")))
-			Expect(provider).To(BeNil())
+			Expect(err).To(BeNil())
+			Expect(provider).NotTo(BeNil())
 		})
 
 		It("should succeed for gcp", func() {
