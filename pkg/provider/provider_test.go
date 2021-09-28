@@ -15,8 +15,9 @@
 package provider_test
 
 import (
-	"github.com/gardener/virtual-garden/pkg/provider/alicloud"
 	"io/ioutil"
+
+	"github.com/gardener/virtual-garden/pkg/provider/alicloud"
 
 	"github.com/gardener/virtual-garden/pkg/api"
 	. "github.com/gardener/virtual-garden/pkg/provider"
@@ -63,7 +64,7 @@ var _ = Describe("Provider", func() {
 		It("should succeed for alicloud", func() {
 			credentials := api.Credentials{
 				Data: map[string]string{
-					alicloud.DataKeyAccessKeyID: "test-id",
+					alicloud.DataKeyAccessKeyID:     "test-id",
 					alicloud.DataKeyAccessKeySecret: "test-secret",
 					alicloud.DataKeyStorageEndpoint: "test-endpoint",
 				},

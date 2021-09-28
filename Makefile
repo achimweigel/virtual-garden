@@ -114,7 +114,7 @@ test:
 
 .PHONY: test-e2e
 test-e2e:
-	ginkgo -v $(REPO_ROOT)/test/e2e
+	@REPO_ROOT=$(REPO_ROOT) ./hack/test-e2e.sh
 
 .PHONY: test-cov
 test-cov:
